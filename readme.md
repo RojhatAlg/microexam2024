@@ -1,4 +1,4 @@
-1. Run all these commands to start the project, build and run
+1. Run all these commands to start the project, build and run (Cencor might need to clean and install maven for all the microservice packages: Maven -> "The service" -> Lifecycle -> Clean and Install)
 ```
 cd backend
 docker pull roal005/backend-eureka-server:latest
