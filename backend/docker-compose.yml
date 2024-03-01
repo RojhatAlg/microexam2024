@@ -1,0 +1,174 @@
+version: '3.8'
+services:
+  eureka-server:
+    container_name: eureka-server
+    build:
+      context: ./eureka-server
+      dockerfile: Dockerfile
+    ports:
+      - "8761:8761"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    networks:
+      - micro
+
+  gateway:
+    container_name: gateway
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    depends_on:
+      - eureka-server
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    networks:
+      - micro
+
+  rabbitmq:
+    image: rabbitmq:3.13.0-rc.4-management-alpine
+    container_name: rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - micro
+
+  postgres:
+    image: postgres:latest
+    container_name: postgres_db
+    volumes:
+      - ./init-db:/docker-entrypoint-initdb.d
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    networks:
+      - micro
+    restart: unless-stopped
+
+  pgadmin:
+    container_name: pgadmin
+    image: dpage/pgadmin4:latest
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-pgadmin4@pgadmin.org}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    volumes:
+      - pgadmin:/var/lib/pgadmin
+    ports:
+      - "5050:80"
+    networks:
+      - micro
+    restart: unless-stopped
+
+  children-service:
+    container_name: children-service
+    build:
+      context: ./children-service
+      dockerfile: Dockerfile
+    ports:
+      - "7072:7072"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_RABBITMQ_HOST: rabbitmq
+    networks:
+      - micro
+    depends_on:
+      - postgres
+      - rabbitmq
+      - eureka-server
+
+  parent-service:
+    container_name: parent-service
+    build:
+      context: ./parent-service
+      dockerfile: Dockerfile
+    ports:
+      - "6072:6072"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_RABBITMQ_HOST: rabbitmq
+    networks:
+      - micro
+    depends_on:
+      - postgres
+      - rabbitmq
+      - eureka-server
+
+  feedback-service:
+    container_name: feedback-service
+    build:
+      context: ./feedback-service
+      dockerfile: Dockerfile
+    ports:
+      - "1313:1313"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_RABBITMQ_HOST: rabbitmq
+    networks:
+      - micro
+    depends_on:
+      - postgres
+      - rabbitmq
+      - eureka-server
+
+  user-management:
+    container_name: user-management
+    build:
+      context: ./user-management
+      dockerfile: Dockerfile
+    ports:
+      - "9089:9089"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_RABBITMQ_HOST: rabbitmq
+    networks:
+      - micro
+    depends_on:
+      - postgres
+      - rabbitmq
+      - eureka-server
+
+  message-service:
+    container_name: message-service
+    build:
+      context: ./message-service
+      dockerfile: Dockerfile
+    ports:
+      - "1919:1919"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_RABBITMQ_HOST: rabbitmq
+    networks:
+      - micro
+    depends_on:
+      - postgres
+      - rabbitmq
+      - eureka-server
+
+  frontend:
+    image: frontend
+    build:
+      context: ./../frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    networks:
+      - micro
+
+networks:
+  postgres:
+    driver: bridgeneclient
+  micro:
+    driver: bridge
+
+volumes:
+  pgadmin:
+  postgres_data:

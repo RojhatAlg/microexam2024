@@ -1,0 +1,70 @@
+eureka:
+  client:
+    service-url:
+      defaultZone: http://eureka-server:8761/eureka/
+
+logging:
+  level:
+    com:
+      netflix:
+        discovery:
+          shared:
+            resolver:
+              aws: WARN
+    gateway:
+      filters:
+        JwtAuthFilter: INFO
+    org:
+      springframework:
+        cloud:
+          gateway:
+            route:
+              routedefinition-locator: INFO
+    reactor:
+      netty: INFO
+    root: INFO
+
+server:
+  port: 8080
+
+spring:
+  application:
+    name: gateway
+
+  cloud:
+    gateway:
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials, RETAIN_UNIQUE
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins: "http://localhost:3000"
+            allowedHeaders: "*"
+            allowedMethods: "*"
+            allowCredentials: false
+
+      routes:
+        - id: user-management
+          predicates:
+            - Path=/api/users/**
+          uri: lb://USERS-MANAGEMENT
+
+        - id: parent-service
+          predicates:
+            - Path=/api/parents/**
+          uri: lb://PARENT-SERVICE
+
+        - id: children-service
+          predicates:
+            - Path=/api/children/**
+          uri: lb://CHILDREN-SERVICE
+
+        - id: feedback-service
+          predicates:
+            - Path=/api/feedbacks/**
+          uri: lb://FEEDBACK-SERVICE
+
+        - id: message-service
+          predicates:
+            - Path=/api/messages/**
+          uri: lb://MESSAGE-SERVICE
