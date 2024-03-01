@@ -1,4 +1,7 @@
 1. Run all these commands to start the project, build and run (Cencor might need to clean and install maven for all the microservice packages: Maven -> "The service" -> Lifecycle -> Clean and Install)
+  
+![maven](https://github.com/RojhatAlg/microexam2024/assets/115071835/374ee5ef-fadc-4210-a10f-a1d337d51ec4)
+
 ```
 cd backend
 docker pull roal005/backend-eureka-server:latest
@@ -80,6 +83,8 @@ Lastly you can view feedbacks messages sent from parents:
 
 
 when hit this endpoint as get method http://localhost:8080/api/feedbacks, you will get messages from RMQ queue, sendt by  message server.
+
+Go to queue and streams section
 
 ![rabbitmq](https://github.com/RojhatAlg/microexam2024/assets/115071835/59115042-65f3-4a8d-8155-0ea4cd09ab1b)
 
