@@ -19,7 +19,7 @@ Cencor can access backend at localhost:8080 and frontend at localhost:3000
 
 
 2. 
-All the services should now be "running":
+All the services should now be "running": If not, run this: "docker compose up -d" again
 
 ![allServicesRunning](https://github.com/RojhatAlg/microexam2024/assets/115071835/6e5cc82f-40e2-463d-a4d9-2563fafc0ec0)
 
